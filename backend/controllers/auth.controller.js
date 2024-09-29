@@ -10,11 +10,11 @@ export async function signup(req, res) {
         if (validationErr) {
             return res.status(400).json(validationErr);
         }
-        const existingUserByEmail = await User.findOne({ email: email });
-        const existingUserByUsername = await User.findOne({ username: username });
+        const existingUserByEmail = await User.findOne({ email });
+        const existingUserByUsername = await User.findOne({ username });
         const validationUniqueErr = validateUniqueUser(existingUserByEmail, existingUserByUsername);
         if (validationUniqueErr) {
-            return res.status(400).json(validationUniqueErr);
+            return res.status(408).json(validationUniqueErr);
         }
         const salt = await bcryptjs.genSalt(10);
         const hashedPassword = await bcryptjs.hash(password, salt);
@@ -40,7 +40,7 @@ export async function login(req, res) {
         if (validationErr) {
             return res.status(400).json(validationErr);
         }
-        const user = await User.findOne({ email: email });
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ success: false, message: "Invalid credentials" });
         }
@@ -64,3 +64,10 @@ export async function logout(req, res) {
     }
 }
 
+export async function authCheck(req, res) {
+    try {
+        res.status(200).json({ success: true, message: "Authenticated", user: req.user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
